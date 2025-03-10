@@ -28,44 +28,36 @@ def large_oscillator_cpu(x, t, gamma=0.1):
     
     return dxdt
 
-###############################################################################
-# 2) MAIN SCRIPT - Solve the 100D ODE on CPU with minimal overhead
-###############################################################################
-def main():
-    print("Running CPU-based ODE integration...")
+print("Running CPU-based ODE integration...")
 
-    # Initial condition of size 100
-    x0 = np.random.randn(1000000)
+x0 = np.random.randn(1000000)
 
-    # Time range and resolution
-    steps = 2000
-    t0, t1 = 0.0, 100.0
-    times = np.linspace(t0, t1, steps)
+# Time range and resolution
+steps = 2000
+t0, t1 = 0.0, 100.0
+times = np.linspace(t0, t1, steps)
 
-    # Measure solve time
-    start_time = time.time()
-    
-    # Single-call integration with SciPy
-    # shape of solution -> (steps, 100)
-    solution = odeint(large_oscillator_cpu, x0, times, args=(0.1,))
-    
-    end_time = time.time()
-    elapsed = end_time - start_time
-    print(f"ODE integration completed in {elapsed:.4f} seconds.")
+# Measure solve time
+start_time = time.time()
 
-    # Plot a few states (e.g., x0, x2, x4, x6, x8)
-    plt.figure(figsize=(10, 6))
-    for i in [0, 2, 4, 6, 8]:
-        plt.plot(times, solution[:, i], label=f"x{i}")
+# Single-call integration with SciPy
+# shape of solution -> (steps, 100)
+solution = odeint(large_oscillator_cpu, x0, times, args=(0.1,))
 
-    plt.title("100D Oscillator (CPU, SciPy odeint, single-call solve)")
-    plt.xlabel("Time")
-    plt.ylabel("State Value")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig("cpu_ode_large.png")
-    plt.show()
+end_time = time.time()
+elapsed = end_time - start_time
+print(f"ODE integration completed in {elapsed:.4f} seconds.")
 
-if __name__ == "__main__":
-    main()
+# Plot a few states (e.g., x0, x2, x4, x6, x8)
+plt.figure(figsize=(10, 6))
+for i in [0, 2, 4, 6, 8]:
+    plt.plot(times, solution[:, i], label=f"x{i}")
+
+plt.title("100D Oscillator (CPU, SciPy odeint, single-call solve)")
+plt.xlabel("Time")
+plt.ylabel("State Value")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("cpu_ode_large.png")
+plt.show()

@@ -37,55 +37,44 @@ class LargeOscillator(nn.Module):
 
         return dxdt
 
-###############################################################################
-# 2) MAIN SCRIPT - Solve the ODE on the GPU with minimal overhead
-###############################################################################
-def main():
-    # Check for GPU
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("Using device:", device)
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("Using device:", device)
 
-    # Create the ODE function and move to GPU
-    ode_func = LargeOscillator(gamma=0.1).to(device)
+# Create the ODE function and move to GPU
+ode_func = LargeOscillator(gamma=0.1).to(device)
 
-    # Initial condition of size 100 (50 positions, 50 velocities)
-    # Start with random or any custom initialization
-    x0 = torch.randn(1000000, device=device)
+# Start with random or any custom initialization
+x0 = torch.randn(1000000, device=device)
 
-    # Time range -> single call with many steps
-    steps = 2000     # Increase steps for smoother solution
-    t0, t1 = 0.0, 100.0
-    times = torch.linspace(t0, t1, steps, device=device)
+# Time range -> single call with many steps
+steps = 2000     # Increase steps for smoother solution
+t0, t1 = 0.0, 100.0
+times = torch.linspace(t0, t1, steps, device=device)
 
-    # Measure solve time
-    start_time = time.time()
+start_time = time.time()
 
-    # Single call to integrate the system
-    # shape of solution -> (steps, 100)
-    solution = odeint(ode_func, x0, times)
+# shape of solution -> (steps, 100)
+solution = odeint(ode_func, x0, times)
 
-    end_time = time.time()
-    elapsed = end_time - start_time
-    print(f"ODE integration completed in {elapsed:.4f} seconds.")
+end_time = time.time()
+elapsed = end_time - start_time
+print(f"ODE integration completed in {elapsed:.4f} seconds.")
 
-    # Move result to CPU for plotting
-    solution_cpu = solution.detach().cpu().numpy()
-    times_cpu = times.detach().cpu().numpy()
+# Move result to CPU for plotting
+solution_cpu = solution.detach().cpu().numpy()
+times_cpu = times.detach().cpu().numpy()
 
-    # Plot a few representative states
-    plt.figure(figsize=(10, 6))
-    # For example, plot the first 5 positions
-    for i in [0, 2, 4, 6, 8]:
-        plt.plot(times_cpu, solution_cpu[:, i], label=f"x{i}")
+# Plot a few representative states
+plt.figure(figsize=(10, 6))
+# For example, plot the first 5 positions
+for i in [0, 2, 4, 6, 8]:
+    plt.plot(times_cpu, solution_cpu[:, i], label=f"x{i}")
 
-    plt.title("100D Oscillator (PyTorch + torchdiffeq, single-call GPU solve)")
-    plt.xlabel("Time")
-    plt.ylabel("State Value")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.savefig("gpu_ode_large.png")
-    plt.show()
-
-if __name__ == "__main__":
-    main()
+plt.title("100D Oscillator (PyTorch + torchdiffeq, single-call GPU solve)")
+plt.xlabel("Time")
+plt.ylabel("State Value")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("gpu_ode_large.png")
+plt.show()
